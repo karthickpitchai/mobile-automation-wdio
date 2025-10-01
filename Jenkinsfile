@@ -12,29 +12,29 @@ pipeline {
     }
 
     stages {
-          stage('Clean') {
-            steps {
-                script {
-                    // Clean npm cache and remove node_modules
-                    sh '''
-                        npm cache clean --force
-                        rm -rf node_modules package-lock.json
-                    '''
-                }
-            }
-        }
-        stage('Setup') {
-            steps {
-                script {
-                    // Set Node.js version and install dependencies
-                    sh '''
-                        node -v
-                        npm -v
-                        npm install
-                    '''
-                }
-            }
-        }
+        //   stage('Clean') {
+        //     steps {
+        //         script {
+        //             // Clean npm cache and remove node_modules
+        //             sh '''
+        //                 npm cache clean --force
+        //                 rm -rf node_modules package-lock.json
+        //             '''
+        //         }
+        //     }
+        // }
+        // stage('Setup') {
+        //     steps {
+        //         script {
+        //             // Set Node.js version and install dependencies
+        //             sh '''
+        //                 node -v
+        //                 npm -v
+        //                 npm install
+        //             '''
+        //         }
+        //     }
+        // }
 
         stage('Reserve Device') {
             steps {
