@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    tools {
+        nodejs 'NodeJS' // Make sure this matches the name in Jenkins Global Tool Configuration
+    }
+
     environment {
         DEVICE_FARM_URL = 'http://192.168.1.67:5001'
     }
