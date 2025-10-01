@@ -7,11 +7,24 @@ pipeline {
 
     environment {
         DEVICE_FARM_URL = 'http://localhost:5001'
-        NODE_OPTIONS = '--experimental-vm-modules'  // Enable ES modules
+        NODE_OPTIONS = '--experimental-vm-modules --no-warnings'  // Enable ES modules and suppress warnings
         NODE_ENV = 'development'
+        NPM_CONFIG_LEGACY_PEER_DEPS = 'true'
     }
 
     stages {
+        stage('Clean') {
+            steps {
+                script {
+                    // Clean npm cache and remove node_modules
+                    sh '''
+                        npm cache clean --force
+                        rm -rf node_modules package-lock.json
+                    '''
+                }
+            }
+        }
+
         stage('Setup') {
             steps {
                 script {
@@ -19,7 +32,8 @@ pipeline {
                     sh '''
                         node -v
                         npm -v
-                        npm install
+                        npm install --verbose
+                        npm ls read-pkg || true
                     '''
                 }
             }
