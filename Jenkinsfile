@@ -7,13 +7,11 @@ pipeline {
 
     environment {
         DEVICE_FARM_URL = 'http://localhost:5001'
-        NODE_OPTIONS = '--experimental-vm-modules --no-warnings'  // Enable ES modules and suppress warnings
+        NODE_OPTIONS = '--experimental-vm-modules'  // Enable ES modules
         NODE_ENV = 'development'
-        NPM_CONFIG_LEGACY_PEER_DEPS = 'true'
     }
 
     stages {
-
         stage('Setup') {
             steps {
                 script {
@@ -22,7 +20,6 @@ pipeline {
                         node -v
                         npm -v
                         npm install
-                        npm ls read-pkg || true
                     '''
                 }
             }
