@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DEVICE_FARM_URL = credentials('http://192.168.1.67:5001')
+        DEVICE_FARM_URL = 'http://192.168.1.67:5001'
     }
 
     stages {
