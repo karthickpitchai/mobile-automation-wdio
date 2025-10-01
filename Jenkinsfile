@@ -6,7 +6,7 @@ pipeline {
     }
 
     environment {
-        DEVICE_FARM_URL = 'http://192.168.1.67:5001'
+        DEVICE_FARM_URL = 'http://localhost:5001'
     }
 
     stages {
