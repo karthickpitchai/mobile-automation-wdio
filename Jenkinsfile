@@ -7,12 +7,21 @@ pipeline {
 
     environment {
         DEVICE_FARM_URL = 'http://localhost:5001'
+        NODE_OPTIONS = '--experimental-vm-modules'  // Enable ES modules
+        NODE_ENV = 'development'
     }
 
     stages {
         stage('Setup') {
             steps {
-                sh 'npm install'
+                script {
+                    // Set Node.js version and install dependencies
+                    sh '''
+                        node -v
+                        npm -v
+                        npm install
+                    '''
+                }
             }
         }
 
@@ -31,7 +40,7 @@ pipeline {
                     // Parse the response and get first available device
                     def deviceId = sh(
                         script: """
-                            echo '${response}' | jq -r 'if type == "array" then .[0].id else if type == "object" then .data[0].id else empty end end'
+                            echo 'Get First Device Id ' | jq -r 'if type == "array" then .[0].id else if type == "object" then .data[0].id else empty end end'
                         """,
                         returnStdout: true
                     ).trim()
