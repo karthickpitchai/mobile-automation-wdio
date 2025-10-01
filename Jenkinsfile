@@ -26,7 +26,7 @@ pipeline {
                     ).trim()
                     
                     // Log the response for debugging
-                    echo "API Response: ${response}"
+                    // echo "API Response: ${response}"
                     
                     // Parse the response and get first available device
                     def deviceId = sh(
