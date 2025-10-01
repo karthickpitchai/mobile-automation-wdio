@@ -19,16 +19,39 @@ pipeline {
         stage('Reserve Device') {
             steps {
                 script {
-                    def deviceId = sh(
-                        script: "curl -s ${DEVICE_FARM_URL}/api/devices | jq -r '.[0].id'",
+                    // First, get the response and check its format
+                    def response = sh(
+                        script: "curl -s ${DEVICE_FARM_URL}/api/devices",
                         returnStdout: true
                     ).trim()
-
-                    sh """
-                        curl -X POST ${DEVICE_FARM_URL}/api/devices/${deviceId}/appium/auto-start \\
-                        -H "Content-Type: application/json" \\
-                        -d '{"userId": "jenkins", "duration": 90, "purpose": "Pipeline Testing"}'
-                    """
+                    
+                    // Log the response for debugging
+                    echo "API Response: ${response}"
+                    
+                    // Parse the response and get first available device
+                    def deviceId = sh(
+                        script: """
+                            echo '${response}' | jq -r 'if type == "array" then .[0].id else if type == "object" then .data[0].id else empty end end'
+                        """,
+                        returnStdout: true
+                    ).trim()
+                    
+                    if (deviceId == null || deviceId.isEmpty()) {
+                        error "No available devices found"
+                    }
+                    
+                    echo "Selected Device ID: ${deviceId}"
+                    
+                    def startResponse = sh(
+                        script: """
+                            curl -s -X POST ${DEVICE_FARM_URL}/api/devices/${deviceId}/appium/auto-start \
+                            -H "Content-Type: application/json" \
+                            -d '{"userId": "jenkins", "duration": 90, "purpose": "Pipeline Testing"}'
+                        """,
+                        returnStdout: true
+                    ).trim()
+                    
+                    echo "Start Response: ${startResponse}"
 
                     env.DEVICE_ID = deviceId
                 }

@@ -8,7 +8,8 @@ export const config: WebdriverIO.Config = {
         join(process.cwd(), 'features', '**', '*.feature')
     ],
 
-    hostname: '192.168.1.67',
+    // hostname: '192.168.1.67',
+    hostname: 'localhost',
     port: 4723,
     path: '/',
 
