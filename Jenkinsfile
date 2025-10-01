@@ -40,7 +40,7 @@ pipeline {
                     // Parse the response and get first available device
                     def deviceId = sh(
                         script: """
-                            echo 'Get First Device Id ' | jq -r 'if type == "array" then .[0].id else if type == "object" then .data[0].id else empty end end'
+                            echo '${DEVICE_FARM_URL}' | jq -r 'if type == "array" then .[0].id else if type == "object" then .data[0].id else empty end end'
                         """,
                         returnStdout: true
                     ).trim()
