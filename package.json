@@ -5,7 +5,6 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "preinstall": "npx npm-force-resolutions",
     "test:android": "wdio run ./config/wdio.android.conf.ts",
     "test:ios": "wdio run ./config/wdio.ios.conf.ts",
     "test:android:smoke": "wdio run ./config/wdio.android.conf.ts --cucumberOpts.tags='@smoke'",
@@ -13,10 +12,10 @@
     "test:android:login": "wdio run ./config/wdio.android.conf.ts --cucumberOpts.tags='@login'",
     "test:ios:login": "wdio run ./config/wdio.ios.conf.ts --cucumberOpts.tags='@login'"
   },
-  "resolutions": {
+  "overrides": {
     "axios": "1.12.2",
     "tmp": "0.2.4",
-    "path-exists": "4.0.0",
+    "path-exists": "5.0.0",
     "@cucumber/cucumber": "10.9.0"
   },
   "keywords": [],
@@ -32,8 +31,6 @@
     "@wdio/spec-reporter": "^9.20.0",
     "appium": "^3.0.2",
     "appium-uiautomator2-driver": "^5.0.3",
-    "axios": "^1.12.2",
-    "npm-force-resolutions": "^0.0.10",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.2"
   }

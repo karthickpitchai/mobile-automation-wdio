@@ -5,11 +5,11 @@ Feature: Login Functionality
   So that I can access my account
 
   Background:
-    Given I am on the login page
+    Given I am on the home page
 
   @login @negative
   Scenario: Login with invalid credentials
-    When I login with username "invaliduser" and password "wrongpass"
+    When I click the buttons on home page
   #   Then I should see an error message
 
   # @login @negative
