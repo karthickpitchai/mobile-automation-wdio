@@ -12,6 +12,17 @@ pipeline {
     }
 
     stages {
+          stage('Clean') {
+            steps {
+                script {
+                    // Clean npm cache and remove node_modules
+                    sh '''
+                        npm cache clean --force
+                        rm -rf node_modules package-lock.json
+                    '''
+                }
+            }
+        }
         stage('Setup') {
             steps {
                 script {
