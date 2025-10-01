@@ -30,7 +30,8 @@ pipeline {
                     sh '''
                         node -v
                         npm -v
-                        npm install
+                        npm install --verbose
+                        npm ls read-pkg || true
                     '''
                 }
             }
