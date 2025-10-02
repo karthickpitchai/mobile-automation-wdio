@@ -42,17 +42,17 @@ private dragButton(): ChainablePromiseElement {
      * Click login button
      */
     async clickButtons(): Promise<void> {
-        await browser.pause(3000);
+        // await browser.pause(3000);
         await this.click(this.loginButton());
-        await browser.pause(2000);
+        await browser.pause(1000);
         await this.click(this.webViewButton());
-        await browser.pause(2000);
+        await browser.pause(1000);
         await this.click(this.swipeButton());
-        await browser.pause(2000);
+        await browser.pause(1000);
         await this.click(this.formsButton());
-        await browser.pause(2000);
+        await browser.pause(1000);
         await this.click(this.dragButton());
-        await browser.pause(2000);
+        await browser.pause(1000);
     }
 
 
