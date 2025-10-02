@@ -51,7 +51,7 @@ pipeline {
                     // Parse the response and get first available device
                     def deviceId = sh(
                         script: """
-                            echo '${response}' | jq -r 'if type == "array" then .[0].id else if type == "object" then .data[0].id else empty end end'
+                            echo '${response}' | jq -r 'if type == "array" then .[4].id else if type == "object" then .data[4].id else empty end end'
                         """,
                         returnStdout: true
                     ).trim()
