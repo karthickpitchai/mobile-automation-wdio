@@ -187,21 +187,21 @@ pipeline {
 
                     def deviceName = sh(
                         script: """
-                            echo '${startResponse}' | jq -r '.capabilities.appium:deviceName // "${params.DEVICE_NAME}"'
+                            echo '${startResponse}' | jq -r '.capabilities.deviceName // "${params.DEVICE_NAME}"'
                         """,
                         returnStdout: true
                     ).trim()
 
                     def udid = sh(
                         script: """
-                            echo '${startResponse}' | jq -r '.capabilities.appium:udid // "${params.DEVICE_NAME}"'
+                            echo '${startResponse}' | jq -r '.capabilities.udid // "${params.DEVICE_NAME}"'
                         """,
                         returnStdout: true
                     ).trim()
 
                     def platformVersion = sh(
                         script: """
-                            echo '${startResponse}' | jq -r '.capabilities.appium:platformVersion // "14.0"'
+                            echo '${startResponse}' | jq -r '.capabilities.platformVersion // "14.0"'
                         """,
                         returnStdout: true
                     ).trim()
