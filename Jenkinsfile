@@ -4,11 +4,15 @@ pipeline {
     tools {
         nodejs 'NodeJS' // Make sure this matches the name in Jenkins Global Tool Configuration
     }
-
+    
     environment {
         DEVICE_FARM_URL = 'http://localhost:5001'
         NODE_OPTIONS = '--experimental-vm-modules'  // Enable ES modules
         NODE_ENV = 'development'
+    }
+    parameters {
+        string(name: 'DEVICE_NAME', defaultValue: 'SM-S911B', description: 'Select Device')
+        choice(name: 'PLATFORM', choices: ['iOS', 'Android'], description: 'Mobile Platform')
     }
 
     stages {
