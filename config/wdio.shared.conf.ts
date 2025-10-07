@@ -6,7 +6,9 @@ const getCliArg = (argName: string, defaultValue: string | number): string | num
     return arg ? arg.split('=')[1] : defaultValue;
 };
 
-const testType = getCliArg('testType', '@Smoke') as string;
+const testType = getCliArg('testType', 'Smoke') as string;
+// Add @ prefix if not already present
+const tagString = testType.startsWith('@') ? testType : `@${testType}`;
 
 export const config: Options.Testrunner = {
     runner: 'local',
@@ -45,7 +47,7 @@ export const config: Options.Testrunner = {
         snippets: true,
         source: true,
         strict: false,
-        tags: testType,
+        tags: tagString,
         timeout: 60000,
         ignoreUndefinedDefinitions: false
     },

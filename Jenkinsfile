@@ -2,6 +2,7 @@ properties([
     parameters([
         [$class: 'ChoiceParameter',
             choiceType: 'PT_SINGLE_SELECT',
+            description: 'Select Platform',
             filterLength: 1,
             filterable: false,
             name: 'PLATFORM',
@@ -21,6 +22,7 @@ properties([
         ],
         [$class: 'CascadeChoiceParameter',
             choiceType: 'PT_SINGLE_SELECT',
+            description: 'Select Device',
             name: 'DEVICE_NAME',
             referencedParameters: 'PLATFORM',
             script: [
@@ -83,6 +85,7 @@ properties([
         ],
         [$class: 'ChoiceParameter',
             choiceType: 'PT_SINGLE_SELECT',
+            description: 'Test Type',
             filterLength: 1,
             filterable: false,
             name: 'TEST_TYPE',
@@ -91,12 +94,12 @@ properties([
                 fallbackScript: [
                     classpath: [],
                     sandbox: true,
-                    script: 'return ["@Smoke", "@Sanity", "@Regression"]'
+                    script: 'return ["Smoke", "Sanity", "Regression"]'
                 ],
                 script: [
                     classpath: [],
                     sandbox: true,
-                    script: 'return ["@Smoke", "@Sanity", "@Regression"]'
+                    script: 'return ["Smoke", "Sanity", "Regression"]'
                 ]
             ]
         ]
@@ -224,18 +227,25 @@ pipeline {
         stage('Run Tests') {
             steps {
                 script {
-                    def testCommand = "npm run test:${params.PLATFORM} -- --hostname=${env.APPIUM_HOST} --port=${env.APPIUM_PORT} --deviceName='${env.DEVICE_NAME}' --testType='${params.TEST_TYPE}'"
+                    def args = [
+                        "--hostname=${env.APPIUM_HOST}",
+                        "--port=${env.APPIUM_PORT}",
+                        "--deviceName=${env.DEVICE_NAME}",
+                        "--testType=${params.TEST_TYPE}"
+                    ]
 
                     if (env.UDID && env.UDID != "") {
-                        testCommand += " --udid='${env.UDID}'"
+                        args.add("--udid=${env.UDID}")
                     }
 
                     if (env.PLATFORM_VERSION && env.PLATFORM_VERSION != "") {
-                        testCommand += " --platformVersion='${env.PLATFORM_VERSION}'"
+                        args.add("--platformVersion=${env.PLATFORM_VERSION}")
                     }
 
-                    echo "Running: ${testCommand}"
-                    sh testCommand
+                    def argsString = args.join(' ')
+                    echo "Test arguments: ${argsString}"
+
+                    sh "npm run test:${params.PLATFORM} -- ${argsString}"
                 }
             }
         }
