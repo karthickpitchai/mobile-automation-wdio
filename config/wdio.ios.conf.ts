@@ -16,13 +16,17 @@ const platformVersion = getCliArg('platformVersion', '17.0') as string;
 export const config: WebdriverIO.Config = {
     ...sharedConfig,
 
-     specs: [
+    specs: [
         join(process.cwd(), 'features', '**', '*.feature')
     ],
-    
+
     hostname: hostname,
     port: port,
     path: '/',
+
+    // Connection settings
+    connectionRetryTimeout: 120000,
+    connectionRetryCount: 3,
 
     capabilities: [{
         platformName: 'iOS',
@@ -38,6 +42,8 @@ export const config: WebdriverIO.Config = {
         'appium:printPageSourceOnFindFailure': true,
         'appium:bundleId': 'com.example.app',
         'appium:dontStopAppOnReset': true,
-        'appium:forceAppLaunch': true
+        'appium:forceAppLaunch': true,
+        'appium:clearSystemFiles': true,
+        'appium:enforceAppInstall': false
     }],
 };

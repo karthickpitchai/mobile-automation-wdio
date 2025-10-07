@@ -23,7 +23,6 @@ export const config: Options.Testrunner = {
 
     maxInstances: 1,
 
-
     logLevel: 'info',
 
     bail: 0,
@@ -33,6 +32,9 @@ export const config: Options.Testrunner = {
     connectionRetryTimeout: 120000,
 
     connectionRetryCount: 3,
+
+    // Enable automatic session recovery
+    automationProtocol: 'webdriver',
 
     // services: ['appium'],
 
@@ -71,20 +73,5 @@ export const config: Options.Testrunner = {
      */
     onComplete: function() {
         console.log('Test execution completed!');
-    },
-
-    /**
-     * Gets executed after all workers shut down
-     */
-    after: async function () {
-        try {
-            // Ensure session is properly closed
-            if (browser && typeof browser.deleteSession === 'function') {
-                await browser.deleteSession();
-                console.log('Browser session closed successfully');
-            }
-        } catch (e) {
-            console.log('Session cleanup:', e.message);
-        }
     }
 };

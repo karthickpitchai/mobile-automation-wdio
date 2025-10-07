@@ -24,6 +24,10 @@ export const config: WebdriverIO.Config = {
     port: port,
     path: '/',
 
+    // Connection settings
+    connectionRetryTimeout: 120000,
+    connectionRetryCount: 3,
+
     capabilities: [{
         platformName: 'Android',
         'appium:automationName': 'UiAutomator2',
@@ -38,6 +42,8 @@ export const config: WebdriverIO.Config = {
         'appium:fullReset': false,
         'appium:printPageSourceOnFindFailure': true,
         'appium:dontStopAppOnReset': true,
-        'appium:forceAppLaunch': true
+        'appium:forceAppLaunch': true,
+        'appium:clearSystemFiles': true,
+        'appium:enforceAppInstall': false
     }]
 };
