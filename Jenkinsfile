@@ -4,15 +4,76 @@ pipeline {
     tools {
         nodejs 'NodeJS' // Make sure this matches the name in Jenkins Global Tool Configuration
     }
-    
+
     environment {
         DEVICE_FARM_URL = 'http://localhost:5001'
         NODE_OPTIONS = '--experimental-vm-modules'  // Enable ES modules
         NODE_ENV = 'development'
     }
-    parameters {
-        choice(name: 'PLATFORM', choices: ['Android' , 'iOS'], description: 'Mobile Platform')
-    }
+
+    properties([
+        parameters([
+            [$class: 'ChoiceParameter',
+                choiceType: 'PT_SINGLE_SELECT',
+                description: 'Mobile Platform',
+                filterLength: 1,
+                filterable: false,
+                name: 'PLATFORM',
+                script: [
+                    $class: 'GroovyScript',
+                    fallbackScript: [
+                        classpath: [],
+                        sandbox: true,
+                        script: 'return ["Android", "iOS"]'
+                    ],
+                    script: [
+                        classpath: [],
+                        sandbox: true,
+                        script: 'return ["Android", "iOS"]'
+                    ]
+                ]
+            ],
+            [$class: 'DynamicReferenceParameter',
+                choiceType: 'ET_FORMATTED_HTML',
+                description: 'Select Device',
+                name: 'DEVICE_NAME',
+                omitValueField: true,
+                script: [
+                    $class: 'GroovyScript',
+                    fallbackScript: [
+                        classpath: [],
+                        sandbox: true,
+                        script: 'return "<select name=\'value\'><option value=\'SM-S911B\'>SM-S911B</option></select>"'
+                    ],
+                    script: [
+                        classpath: [],
+                        sandbox: true,
+                        script: '''
+                            import groovy.json.JsonSlurper
+                            def apiUrl = "http://localhost:5001/api/devices"
+                            try {
+                                def response = new URL(apiUrl).text
+                                def jsonSlurper = new JsonSlurper()
+                                def devices = jsonSlurper.parseText(response)
+
+                                def deviceList = []
+                                if (devices instanceof List) {
+                                    deviceList = devices.collect { it.name }
+                                } else if (devices.data instanceof List) {
+                                    deviceList = devices.data.collect { it.name }
+                                }
+
+                                def options = deviceList.collect { "<option value=\'${it}\'>${it}</option>" }.join("")
+                                return "<select name=\'value\'>${options}</select>"
+                            } catch (Exception e) {
+                                return "<select name=\'value\'><option value=\'SM-S911B\'>SM-S911B (default)</option></select>"
+                            }
+                        '''
+                    ]
+                ]
+            ]
+        ])
+    ])
 
     stages {
         //   stage('Clean') {
@@ -39,43 +100,6 @@ pipeline {
         //     }
         // }
 
-        stage('Select Device') {
-            steps {
-                script {
-                    // Get available devices from API
-                    def response = sh(
-                        script: "curl -s ${DEVICE_FARM_URL}/api/devices",
-                        returnStdout: true
-                    ).trim()
-
-                    // Extract device names
-                    def deviceNames = sh(
-                        script: """
-                            echo '${response}' | jq -r 'if type == "array" then (.[].name) else if type == "object" then (.data[].name) else empty end end' | tr '\\n' ',' | sed 's/,\$//'
-                        """,
-                        returnStdout: true
-                    ).trim()
-
-                    if (deviceNames.isEmpty()) {
-                        error "No devices available"
-                    }
-
-                    // Convert comma-separated string to list for input choices
-                    def deviceList = deviceNames.split(',').collect { it.trim() }
-
-                    // Let user select device
-                    env.DEVICE_NAME = input(
-                        message: 'Select Device',
-                        parameters: [
-                            choice(name: 'DEVICE_NAME', choices: deviceList, description: 'Available Devices')
-                        ]
-                    )
-
-                    echo "Selected Device: ${env.DEVICE_NAME}"
-                }
-            }
-        }
-
         stage('Reserve Device') {
             steps {
                 script {
@@ -91,13 +115,13 @@ pipeline {
                     // Parse the response and filter by device name
                     def deviceId = sh(
                         script: """
-                            echo '${response}' | jq -r 'if type == "array" then (.[] | select(.name == "${env.DEVICE_NAME}") | .id) else if type == "object" then (.data[] | select(.name == "${env.DEVICE_NAME}") | .id) else empty end end'
+                            echo '${response}' | jq -r 'if type == "array" then (.[] | select(.name == "${params.DEVICE_NAME}") | .id) else if type == "object" then (.data[] | select(.name == "${params.DEVICE_NAME}") | .id) else empty end end'
                         """,
                         returnStdout: true
                     ).trim()
 
                     if (deviceId == null || deviceId.isEmpty()) {
-                        error "Device '${env.DEVICE_NAME}' not found or not available"
+                        error "Device '${params.DEVICE_NAME}' not found or not available"
                     }
                     
                     echo "Selected Device ID: ${deviceId}"
