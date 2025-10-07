@@ -34,8 +34,10 @@ export const config: WebdriverIO.Config = {
         'appium:appWaitActivity': '*',
         'appium:newCommandTimeout': 240,
         'appium:autoGrantPermissions': true,
-        'appium:noReset': false,
+        'appium:noReset': true,
         'appium:fullReset': false,
-        'appium:printPageSourceOnFindFailure': true
+        'appium:printPageSourceOnFindFailure': true,
+        'appium:dontStopAppOnReset': true,
+        'appium:forceAppLaunch': true
     }]
 };

@@ -55,21 +55,36 @@ export const config: Options.Testrunner = {
     /**
      * Gets executed once before all workers get launched.
      */
-    onPrepare: function (config, capabilities) {
+    onPrepare: function () {
         console.log('Starting test execution...');
     },
 
     /**
      * Gets executed before test execution begins.
      */
-    before: function (capabilities, specs) {
-        console.log(`Running: ${specs}`);
+    before: function () {
+        console.log('Test session started');
     },
 
     /**
      * Gets executed after all tests are done.
      */
-    onComplete: function(exitCode, config, capabilities, results) {
+    onComplete: function() {
         console.log('Test execution completed!');
+    },
+
+    /**
+     * Gets executed after all workers shut down
+     */
+    after: async function () {
+        try {
+            // Ensure session is properly closed
+            if (browser && typeof browser.deleteSession === 'function') {
+                await browser.deleteSession();
+                console.log('Browser session closed successfully');
+            }
+        } catch (e) {
+            console.log('Session cleanup:', e.message);
+        }
     }
 };

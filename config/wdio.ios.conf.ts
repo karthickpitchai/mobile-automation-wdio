@@ -33,9 +33,11 @@ export const config: WebdriverIO.Config = {
         'appium:app': join(process.cwd(), 'apps', 'ios', 'wdiodemoapp.app'),
         'appium:newCommandTimeout': 240,
         'appium:autoAcceptAlerts': true,
-        'appium:noReset': false,
+        'appium:noReset': true,
         'appium:fullReset': false,
         'appium:printPageSourceOnFindFailure': true,
-        'appium:bundleId': 'com.example.app'
+        'appium:bundleId': 'com.example.app',
+        'appium:dontStopAppOnReset': true,
+        'appium:forceAppLaunch': true
     }],
 };

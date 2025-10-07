@@ -246,7 +246,13 @@ pipeline {
                     def argsString = args.join(' ')
                     echo "Test arguments: ${argsString}"
 
-                    sh "npm run test:${params.PLATFORM} -- ${argsString}"
+                    try {
+                        sh "npm run test:${params.PLATFORM} -- ${argsString}"
+                    } catch (Exception e) {
+                        echo "Test execution failed: ${e.message}"
+                        currentBuild.result = 'FAILURE'
+                        throw e
+                    }
                 }
             }
         }
@@ -255,12 +261,23 @@ pipeline {
     post {
         always {
             script {
+                // Stop the device/appium session
                 if (env.DEVICE_ID) {
-                    sh "curl -X POST ${DEVICE_FARM_URL}/api/devices/${env.DEVICE_ID}/appium/stop"
+                    try {
+                        echo "Stopping device: ${env.DEVICE_ID}"
+                        sh "curl -s -X POST ${DEVICE_FARM_URL}/api/devices/${env.DEVICE_ID}/appium/stop"
+                        echo "Device stopped successfully"
+                    } catch (Exception e) {
+                        echo "Warning: Failed to stop device: ${e.message}"
+                    }
                 }
 
                 // Cleanup temporary files for this build
-                sh "rm -f /tmp/devices_response_${BUILD_NUMBER}.json /tmp/start_response_${BUILD_NUMBER}.json"
+                try {
+                    sh "rm -f /tmp/devices_response_${BUILD_NUMBER}.json /tmp/start_response_${BUILD_NUMBER}.json"
+                } catch (Exception e) {
+                    echo "Warning: Failed to cleanup temp files: ${e.message}"
+                }
             }
         }
     }
