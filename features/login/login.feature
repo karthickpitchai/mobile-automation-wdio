@@ -11,7 +11,7 @@ Feature: Login Functionality
   Scenario: lick the buttons on home page for WDIO demo app
     When I click the buttons on home page
 
-    @login @negative @Regression
+    @login @negative @Regression @Sanity
   Scenario: lick the buttons on home page for WDIO demo app
     When I click the buttons on home page
   #   Then I should see an error message
