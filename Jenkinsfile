@@ -2,7 +2,6 @@ properties([
     parameters([
         [$class: 'ChoiceParameter',
             choiceType: 'PT_SINGLE_SELECT',
-            description: 'Mobile Platform',
             filterLength: 1,
             filterable: false,
             name: 'PLATFORM',
@@ -22,7 +21,6 @@ properties([
         ],
         [$class: 'CascadeChoiceParameter',
             choiceType: 'PT_SINGLE_SELECT',
-            description: 'Select Device',
             name: 'DEVICE_NAME',
             referencedParameters: 'PLATFORM',
             script: [
@@ -30,13 +28,16 @@ properties([
                 fallbackScript: [
                     classpath: [],
                     sandbox: false,
-                    script: 'return ["SM-S911B"]'
+                    script: 'return ["Honor_23"]'
                 ],
                 script: [
                     classpath: [],
                     sandbox: false,
                     script: '''
                         import groovy.json.JsonSlurper
+
+                        // Get the selected platform from the parameter
+                        def selectedPlatform = PLATFORM
 
                         def apiUrl = "http://localhost:5001/api/devices"
                         def deviceList = []
@@ -55,20 +56,27 @@ properties([
                                 def jsonSlurper = new JsonSlurper()
                                 def result = jsonSlurper.parseText(response)
 
+                                def devices = []
                                 if (result.success && result.data instanceof List) {
-                                    deviceList = result.data.collect { device -> device.name }
+                                    devices = result.data
                                 } else if (result instanceof List) {
-                                    deviceList = result.collect { device -> device.name }
+                                    devices = result
                                 }
 
-                                deviceList = deviceList.findAll { it != null && it != "" }.unique()
+                                // Filter devices by platform and online status
+                                deviceList = devices.findAll { device ->
+                                    device.platform?.toLowerCase() == selectedPlatform?.toLowerCase() &&
+                                    device.status?.toLowerCase() == "online"
+                                }.collect { device ->
+                                    device.name
+                                }.findAll { it != null && it != "" }.unique()
                             }
                         } catch (Exception e) {
                             // Return error info for debugging
-                            return ["Error: ${e.class.name}", "Message: ${e.message}", "SM-S911B"]
+                            return ["Error: ${e.class.name}", "Message: ${e.message}", "Honor_23"]
                         }
 
-                        return deviceList.size() > 0 ? deviceList : ["No devices found", "SM-S911B"]
+                        return deviceList.size() > 0 ? deviceList : ["No ${selectedPlatform} devices online", "Honor_23"]
                     '''
                 ]
             ]
