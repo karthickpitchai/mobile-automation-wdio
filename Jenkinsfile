@@ -1,3 +1,66 @@
+properties([
+    parameters([
+        [$class: 'ChoiceParameter',
+            choiceType: 'PT_SINGLE_SELECT',
+            description: 'Mobile Platform',
+            filterLength: 1,
+            filterable: false,
+            name: 'PLATFORM',
+            script: [
+                $class: 'GroovyScript',
+                fallbackScript: [
+                    classpath: [],
+                    sandbox: true,
+                    script: 'return ["Android", "iOS"]'
+                ],
+                script: [
+                    classpath: [],
+                    sandbox: true,
+                    script: 'return ["Android", "iOS"]'
+                ]
+            ]
+        ],
+        [$class: 'CascadeChoiceParameter',
+            choiceType: 'PT_SINGLE_SELECT',
+            description: 'Select Device',
+            name: 'DEVICE_NAME',
+            referencedParameters: 'PLATFORM',
+            script: [
+                $class: 'GroovyScript',
+                fallbackScript: [
+                    classpath: [],
+                    sandbox: true,
+                    script: 'return ["SM-S911B"]'
+                ],
+                script: [
+                    classpath: [],
+                    sandbox: true,
+                    script: '''
+                        import groovy.json.JsonSlurper
+                        def apiUrl = "http://localhost:5001/api/devices"
+                        try {
+                            def response = new URL(apiUrl).text
+                            def jsonSlurper = new JsonSlurper()
+                            def devices = jsonSlurper.parseText(response)
+
+                            def deviceList = []
+                            if (devices instanceof List) {
+                                deviceList = devices.collect { it.name }
+                            } else if (devices.data instanceof List) {
+                                deviceList = devices.data.collect { it.name }
+                            }
+
+                            return deviceList ?: ["SM-S911B"]
+                        } catch (Exception e) {
+                            return ["SM-S911B"]
+                        }
+                    '''
+                ]
+            ]
+        ]
+    ])
+])
+
 pipeline {
     agent any
 
@@ -10,70 +73,6 @@ pipeline {
         NODE_OPTIONS = '--experimental-vm-modules'  // Enable ES modules
         NODE_ENV = 'development'
     }
-
-    properties([
-        parameters([
-            [$class: 'ChoiceParameter',
-                choiceType: 'PT_SINGLE_SELECT',
-                description: 'Mobile Platform',
-                filterLength: 1,
-                filterable: false,
-                name: 'PLATFORM',
-                script: [
-                    $class: 'GroovyScript',
-                    fallbackScript: [
-                        classpath: [],
-                        sandbox: true,
-                        script: 'return ["Android", "iOS"]'
-                    ],
-                    script: [
-                        classpath: [],
-                        sandbox: true,
-                        script: 'return ["Android", "iOS"]'
-                    ]
-                ]
-            ],
-            [$class: 'DynamicReferenceParameter',
-                choiceType: 'ET_FORMATTED_HTML',
-                description: 'Select Device',
-                name: 'DEVICE_NAME',
-                omitValueField: true,
-                script: [
-                    $class: 'GroovyScript',
-                    fallbackScript: [
-                        classpath: [],
-                        sandbox: true,
-                        script: 'return "<select name=\'value\'><option value=\'SM-S911B\'>SM-S911B</option></select>"'
-                    ],
-                    script: [
-                        classpath: [],
-                        sandbox: true,
-                        script: '''
-                            import groovy.json.JsonSlurper
-                            def apiUrl = "http://localhost:5001/api/devices"
-                            try {
-                                def response = new URL(apiUrl).text
-                                def jsonSlurper = new JsonSlurper()
-                                def devices = jsonSlurper.parseText(response)
-
-                                def deviceList = []
-                                if (devices instanceof List) {
-                                    deviceList = devices.collect { it.name }
-                                } else if (devices.data instanceof List) {
-                                    deviceList = devices.data.collect { it.name }
-                                }
-
-                                def options = deviceList.collect { "<option value=\'${it}\'>${it}</option>" }.join("")
-                                return "<select name=\'value\'>${options}</select>"
-                            } catch (Exception e) {
-                                return "<select name=\'value\'><option value=\'SM-S911B\'>SM-S911B (default)</option></select>"
-                            }
-                        '''
-                    ]
-                ]
-            ]
-        ])
-    ])
 
     stages {
         //   stage('Clean') {
