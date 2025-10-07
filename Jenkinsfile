@@ -2,7 +2,6 @@ properties([
     parameters([
         [$class: 'ChoiceParameter',
             choiceType: 'PT_SINGLE_SELECT',
-            description: 'Select Platform',
             filterLength: 1,
             filterable: false,
             name: 'PLATFORM',
@@ -22,7 +21,6 @@ properties([
         ],
         [$class: 'CascadeChoiceParameter',
             choiceType: 'PT_SINGLE_SELECT',
-            description: 'Select Device',
             name: 'DEVICE_NAME',
             referencedParameters: 'PLATFORM',
             script: [
@@ -85,7 +83,6 @@ properties([
         ],
         [$class: 'ChoiceParameter',
             choiceType: 'PT_SINGLE_SELECT',
-            description: 'Test Type',
             filterLength: 1,
             filterable: false,
             name: 'TEST_TYPE',
