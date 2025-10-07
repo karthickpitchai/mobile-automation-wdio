@@ -1,7 +1,7 @@
 import { config as sharedConfig } from './wdio.shared.conf';
 import { join } from 'path';
 
-// Parse CLI arguments for hostname and port
+// Parse CLI arguments
 const getCliArg = (argName: string, defaultValue: string | number): string | number => {
     const arg = process.argv.find(arg => arg.startsWith(`--${argName}=`));
     return arg ? arg.split('=')[1] : defaultValue;
@@ -9,6 +9,9 @@ const getCliArg = (argName: string, defaultValue: string | number): string | num
 
 const hostname = getCliArg('hostname', 'localhost') as string;
 const port = parseInt(getCliArg('port', 4723) as string, 10);
+const deviceName = getCliArg('deviceName', 'iPhone 15') as string;
+const udid = getCliArg('udid', '') as string;
+const platformVersion = getCliArg('platformVersion', '17.0') as string;
 
 export const config: WebdriverIO.Config = {
     ...sharedConfig,
@@ -20,8 +23,9 @@ export const config: WebdriverIO.Config = {
     capabilities: [{
         platformName: 'iOS',
         'appium:automationName': 'XCUITest',
-        'appium:deviceName': 'iPhone 15',
-        'appium:platformVersion': '17.0',
+        'appium:deviceName': deviceName,
+        ...(udid && { 'appium:udid': udid }),
+        'appium:platformVersion': platformVersion,
         'appium:app': join(process.cwd(), 'apps', 'ios', 'app.app'),
         'appium:newCommandTimeout': 240,
         'appium:autoAcceptAlerts': true,

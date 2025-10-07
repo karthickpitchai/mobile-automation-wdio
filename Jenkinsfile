@@ -170,7 +170,7 @@ pipeline {
 
                     echo "Start Response: ${startResponse}"
 
-                    // Parse hostname and port from start response
+                    // Parse configuration from auto-start API response
                     def appiumHost = sh(
                         script: """
                             echo '${startResponse}' | jq -r '.instructions.webdriverio.config.hostname // "localhost"'
@@ -185,18 +185,56 @@ pipeline {
                         returnStdout: true
                     ).trim()
 
+                    def deviceName = sh(
+                        script: """
+                            echo '${startResponse}' | jq -r '.capabilities.appium:deviceName // "${params.DEVICE_NAME}"'
+                        """,
+                        returnStdout: true
+                    ).trim()
+
+                    def udid = sh(
+                        script: """
+                            echo '${startResponse}' | jq -r '.capabilities.appium:udid // "${params.DEVICE_NAME}"'
+                        """,
+                        returnStdout: true
+                    ).trim()
+
+                    def platformVersion = sh(
+                        script: """
+                            echo '${startResponse}' | jq -r '.capabilities.appium:platformVersion // "14.0"'
+                        """,
+                        returnStdout: true
+                    ).trim()
+
                     env.DEVICE_ID = deviceId
                     env.APPIUM_HOST = appiumHost
                     env.APPIUM_PORT = appiumPort
+                    env.DEVICE_NAME = deviceName
+                    env.UDID = udid
+                    env.PLATFORM_VERSION = platformVersion
 
                     echo "Appium Server: ${appiumHost}:${appiumPort}"
+                    echo "Device: ${deviceName} (UDID: ${udid}, Platform Version: ${platformVersion})"
                 }
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh "npm run test:${params.PLATFORM} -- --hostname=${env.APPIUM_HOST} --port=${env.APPIUM_PORT}"
+                script {
+                    def testCommand = "npm run test:${params.PLATFORM} -- --hostname=${env.APPIUM_HOST} --port=${env.APPIUM_PORT} --deviceName=${env.DEVICE_NAME}"
+
+                    if (env.UDID && env.UDID != "") {
+                        testCommand += " --udid=${env.UDID}"
+                    }
+
+                    if (env.PLATFORM_VERSION && env.PLATFORM_VERSION != "") {
+                        testCommand += " --platformVersion=${env.PLATFORM_VERSION}"
+                    }
+
+                    echo "Running: ${testCommand}"
+                    sh testCommand
+                }
             }
         }
     }

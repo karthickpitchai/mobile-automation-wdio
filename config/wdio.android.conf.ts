@@ -1,7 +1,7 @@
 import { config as sharedConfig } from './wdio.shared.conf';
 import { join } from 'path';
 
-// Parse CLI arguments for hostname and port
+// Parse CLI arguments
 const getCliArg = (argName: string, defaultValue: string | number): string | number => {
     const arg = process.argv.find(arg => arg.startsWith(`--${argName}=`));
     return arg ? arg.split('=')[1] : defaultValue;
@@ -9,6 +9,9 @@ const getCliArg = (argName: string, defaultValue: string | number): string | num
 
 const hostname = getCliArg('hostname', 'localhost') as string;
 const port = parseInt(getCliArg('port', 4723) as string, 10);
+const deviceName = getCliArg('deviceName', 'emulator-5554') as string;
+const udid = getCliArg('udid', '') as string;
+const platformVersion = getCliArg('platformVersion', '16.0') as string;
 
 export const config: WebdriverIO.Config = {
     ...sharedConfig,
@@ -24,8 +27,9 @@ export const config: WebdriverIO.Config = {
     capabilities: [{
         platformName: 'Android',
         'appium:automationName': 'UiAutomator2',
-        'appium:deviceName': 'emulator-5554',
-        'appium:platformVersion': '16.0',
+        'appium:deviceName': deviceName,
+        ...(udid && { 'appium:udid': udid }),
+        'appium:platformVersion': platformVersion,
         'appium:app': join(process.cwd(), 'apps', 'android', 'android.wdio.apk'),
         'appium:appWaitActivity': '*',
         'appium:newCommandTimeout': 240,
