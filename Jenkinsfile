@@ -173,7 +173,7 @@ pipeline {
                     // Parse hostname and port from start response
                     def appiumHost = sh(
                         script: """
-                            echo '${startResponse}' | jq -r '.host // .hostname // "localhost"'
+                            echo '${startResponse}' | jq -r '.instructions.webdriverio.config.hostname // "localhost"'
                         """,
                         returnStdout: true
                     ).trim()
