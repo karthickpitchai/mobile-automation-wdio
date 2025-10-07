@@ -11,7 +11,6 @@ pipeline {
         NODE_ENV = 'development'
     }
     parameters {
-        string(name: 'DEVICE_NAME', defaultValue: 'SM-S911B', description: 'Select Device')
         choice(name: 'PLATFORM', choices: ['Android' , 'iOS'], description: 'Mobile Platform')
     }
 
@@ -40,6 +39,43 @@ pipeline {
         //     }
         // }
 
+        stage('Select Device') {
+            steps {
+                script {
+                    // Get available devices from API
+                    def response = sh(
+                        script: "curl -s ${DEVICE_FARM_URL}/api/devices",
+                        returnStdout: true
+                    ).trim()
+
+                    // Extract device names
+                    def deviceNames = sh(
+                        script: """
+                            echo '${response}' | jq -r 'if type == "array" then (.[].name) else if type == "object" then (.data[].name) else empty end end' | tr '\\n' ',' | sed 's/,\$//'
+                        """,
+                        returnStdout: true
+                    ).trim()
+
+                    if (deviceNames.isEmpty()) {
+                        error "No devices available"
+                    }
+
+                    // Convert comma-separated string to list for input choices
+                    def deviceList = deviceNames.split(',').collect { it.trim() }
+
+                    // Let user select device
+                    env.DEVICE_NAME = input(
+                        message: 'Select Device',
+                        parameters: [
+                            choice(name: 'DEVICE_NAME', choices: deviceList, description: 'Available Devices')
+                        ]
+                    )
+
+                    echo "Selected Device: ${env.DEVICE_NAME}"
+                }
+            }
+        }
+
         stage('Reserve Device') {
             steps {
                 script {
@@ -55,13 +91,13 @@ pipeline {
                     // Parse the response and filter by device name
                     def deviceId = sh(
                         script: """
-                            echo '${response}' | jq -r 'if type == "array" then (.[] | select(.name == "${params.DEVICE_NAME}") | .id) else if type == "object" then (.data[] | select(.name == "${params.DEVICE_NAME}") | .id) else empty end end'
+                            echo '${response}' | jq -r 'if type == "array" then (.[] | select(.name == "${env.DEVICE_NAME}") | .id) else if type == "object" then (.data[] | select(.name == "${env.DEVICE_NAME}") | .id) else empty end end'
                         """,
                         returnStdout: true
                     ).trim()
 
                     if (deviceId == null || deviceId.isEmpty()) {
-                        error "Device '${params.DEVICE_NAME}' not found or not available"
+                        error "Device '${env.DEVICE_NAME}' not found or not available"
                     }
                     
                     echo "Selected Device ID: ${deviceId}"
