@@ -5,8 +5,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test:android": "wdio run ./config/wdio.android.conf.ts",
-    "test:ios": "wdio run ./config/wdio.ios.conf.ts",
+    "test:Android": "wdio run ./config/wdio.android.conf.ts",
+    "test:iOS": "wdio run ./config/wdio.ios.conf.ts",
     "test:android:smoke": "wdio run ./config/wdio.android.conf.ts --cucumberOpts.tags='@smoke'",
     "test:ios:smoke": "wdio run ./config/wdio.ios.conf.ts --cucumberOpts.tags='@smoke'",
     "test:android:login": "wdio run ./config/wdio.android.conf.ts --cucumberOpts.tags='@login'",
