@@ -1,6 +1,15 @@
 import { config as sharedConfig } from './wdio.shared.conf';
 import { join } from 'path';
 
+// Parse CLI arguments for hostname and port
+const getCliArg = (argName: string, defaultValue: string | number): string | number => {
+    const arg = process.argv.find(arg => arg.startsWith(`--${argName}=`));
+    return arg ? arg.split('=')[1] : defaultValue;
+};
+
+const hostname = getCliArg('hostname', 'localhost') as string;
+const port = parseInt(getCliArg('port', 4723) as string, 10);
+
 export const config: WebdriverIO.Config = {
     ...sharedConfig,
 
@@ -8,9 +17,8 @@ export const config: WebdriverIO.Config = {
         join(process.cwd(), 'features', '**', '*.feature')
     ],
 
-    // hostname: '192.168.1.67',
-    hostname: 'localhost',
-    port: 4723,
+    hostname: hostname,
+    port: port,
     path: '/',
 
     capabilities: [{

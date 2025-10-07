@@ -167,17 +167,36 @@ pipeline {
                         """,
                         returnStdout: true
                     ).trim()
-                    
+
                     echo "Start Response: ${startResponse}"
 
+                    // Parse hostname and port from start response
+                    def appiumHost = sh(
+                        script: """
+                            echo '${startResponse}' | jq -r '.host // .hostname // "localhost"'
+                        """,
+                        returnStdout: true
+                    ).trim()
+
+                    def appiumPort = sh(
+                        script: """
+                            echo '${startResponse}' | jq -r '.port // 4723'
+                        """,
+                        returnStdout: true
+                    ).trim()
+
                     env.DEVICE_ID = deviceId
+                    env.APPIUM_HOST = appiumHost
+                    env.APPIUM_PORT = appiumPort
+
+                    echo "Appium Server: ${appiumHost}:${appiumPort}"
                 }
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh "npm run test:${params.PLATFORM}"
+                sh "npm run test:${params.PLATFORM} -- --hostname=${env.APPIUM_HOST} --port=${env.APPIUM_PORT}"
             }
         }
     }
