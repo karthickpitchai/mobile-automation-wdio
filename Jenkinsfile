@@ -29,38 +29,46 @@ properties([
                 $class: 'GroovyScript',
                 fallbackScript: [
                     classpath: [],
-                    sandbox: true,
+                    sandbox: false,
                     script: 'return ["SM-S911B"]'
                 ],
                 script: [
                     classpath: [],
-                    sandbox: true,
+                    sandbox: false,
                     script: '''
                         import groovy.json.JsonSlurper
+
                         def apiUrl = "http://localhost:5001/api/devices"
+                        def deviceList = []
+
                         try {
-                            def response = new URL(apiUrl).text
-                            def jsonSlurper = new JsonSlurper()
-                            def result = jsonSlurper.parseText(response)
+                            def url = new URL(apiUrl)
+                            def connection = url.openConnection()
+                            connection.setRequestMethod("GET")
+                            connection.setConnectTimeout(5000)
+                            connection.setReadTimeout(5000)
+                            connection.connect()
 
-                            def deviceList = []
+                            def responseCode = connection.getResponseCode()
+                            if (responseCode == 200) {
+                                def response = connection.getInputStream().getText()
+                                def jsonSlurper = new JsonSlurper()
+                                def result = jsonSlurper.parseText(response)
 
-                            // Check if response has success=true and data array
-                            if (result.success && result.data instanceof List) {
-                                deviceList = result.data.collect { device -> device.name }
+                                if (result.success && result.data instanceof List) {
+                                    deviceList = result.data.collect { device -> device.name }
+                                } else if (result instanceof List) {
+                                    deviceList = result.collect { device -> device.name }
+                                }
+
+                                deviceList = deviceList.findAll { it != null && it != "" }.unique()
                             }
-                            // Fallback: handle direct array response
-                            else if (result instanceof List) {
-                                deviceList = result.collect { device -> device.name }
-                            }
-
-                            // Remove any null or empty values and ensure uniqueness
-                            deviceList = deviceList.findAll { it != null && it != "" }.unique()
-
-                            return deviceList.size() > 0 ? deviceList : ["SM-S911B"]
                         } catch (Exception e) {
-                            return ["SM-S911B"]
+                            // Return error info for debugging
+                            return ["Error: ${e.class.name}", "Message: ${e.message}", "SM-S911B"]
                         }
+
+                        return deviceList.size() > 0 ? deviceList : ["No devices found", "SM-S911B"]
                     '''
                 ]
             ]
