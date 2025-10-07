@@ -73,10 +73,10 @@ properties([
                             }
                         } catch (Exception e) {
                             // Return error info for debugging
-                            return ["Error: ${e.class.name}", "Message: ${e.message}", "Honor_23"]
+                            return ["NO_DEVICES_AVAILABLE"]
                         }
 
-                        return deviceList.size() > 0 ? deviceList : ["No ${selectedPlatform} devices online", "Honor_23"]
+                        return deviceList.size() > 0 ? deviceList : ["NO_DEVICES_AVAILABLE"]
                     '''
                 ]
             ]
@@ -121,6 +121,17 @@ pipeline {
         //         }
         //     }
         // }
+
+        stage('Validate Device Selection') {
+            steps {
+                script {
+                    if (params.DEVICE_NAME == 'NO_DEVICES_AVAILABLE') {
+                        error("❌ Build aborted: No ${params.PLATFORM} devices are currently online and available. Please check your device farm and try again later.")
+                    }
+                    echo "✓ Device validation passed: ${params.DEVICE_NAME} (${params.PLATFORM})"
+                }
+            }
+        }
 
         stage('Reserve Device') {
             steps {
