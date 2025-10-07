@@ -84,7 +84,7 @@ pipeline {
 
         stage('Run Tests') {
             steps {
-                sh 'npm run test:android'
+                sh 'npm run test:${params.PLATFORM}'
             }
         }
     }
