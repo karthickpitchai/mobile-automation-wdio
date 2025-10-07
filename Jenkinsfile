@@ -41,16 +41,23 @@ properties([
                         try {
                             def response = new URL(apiUrl).text
                             def jsonSlurper = new JsonSlurper()
-                            def devices = jsonSlurper.parseText(response)
+                            def result = jsonSlurper.parseText(response)
 
                             def deviceList = []
-                            if (devices instanceof List) {
-                                deviceList = devices.collect { it.name }
-                            } else if (devices.data instanceof List) {
-                                deviceList = devices.data.collect { it.name }
+
+                            // Check if response has success=true and data array
+                            if (result.success && result.data instanceof List) {
+                                deviceList = result.data.collect { device -> device.name }
+                            }
+                            // Fallback: handle direct array response
+                            else if (result instanceof List) {
+                                deviceList = result.collect { device -> device.name }
                             }
 
-                            return deviceList ?: ["SM-S911B"]
+                            // Remove any null or empty values and ensure uniqueness
+                            deviceList = deviceList.findAll { it != null && it != "" }.unique()
+
+                            return deviceList.size() > 0 ? deviceList : ["SM-S911B"]
                         } catch (Exception e) {
                             return ["SM-S911B"]
                         }
