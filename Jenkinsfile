@@ -12,7 +12,7 @@ pipeline {
     }
     parameters {
         string(name: 'DEVICE_NAME', defaultValue: 'SM-S911B', description: 'Select Device')
-        choice(name: 'PLATFORM', choices: ['iOS', 'Android'], description: 'Mobile Platform')
+        choice(name: 'PLATFORM', choices: ['Android' , 'iOS'], description: 'Mobile Platform')
     }
 
     stages {
@@ -48,20 +48,20 @@ pipeline {
                         script: "curl -s ${DEVICE_FARM_URL}/api/devices",
                         returnStdout: true
                     ).trim()
-                    
+
                     // Log the response for debugging
                     // echo "API Response: ${response}"
-                    
-                    // Parse the response and get first available device
+
+                    // Parse the response and filter by device name
                     def deviceId = sh(
                         script: """
-                            echo '${response}' | jq -r 'if type == "array" then .[0].id else if type == "object" then .data[0].id else empty end end'
+                            echo '${response}' | jq -r 'if type == "array" then (.[] | select(.name == "${params.DEVICE_NAME}") | .id) else if type == "object" then (.data[] | select(.name == "${params.DEVICE_NAME}") | .id) else empty end end'
                         """,
                         returnStdout: true
                     ).trim()
-                    
+
                     if (deviceId == null || deviceId.isEmpty()) {
-                        error "No available devices found"
+                        error "Device '${params.DEVICE_NAME}' not found or not available"
                     }
                     
                     echo "Selected Device ID: ${deviceId}"
