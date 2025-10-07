@@ -224,14 +224,14 @@ pipeline {
         stage('Run Tests') {
             steps {
                 script {
-                    def testCommand = "npm run test:${params.PLATFORM} -- --hostname=${env.APPIUM_HOST} --port=${env.APPIUM_PORT} --deviceName=${env.DEVICE_NAME} --testType=${params.TEST_TYPE}"
+                    def testCommand = "npm run test:${params.PLATFORM} -- --hostname=${env.APPIUM_HOST} --port=${env.APPIUM_PORT} --deviceName='${env.DEVICE_NAME}' --testType='${params.TEST_TYPE}'"
 
                     if (env.UDID && env.UDID != "") {
-                        testCommand += " --udid=${env.UDID}"
+                        testCommand += " --udid='${env.UDID}'"
                     }
 
                     if (env.PLATFORM_VERSION && env.PLATFORM_VERSION != "") {
-                        testCommand += " --platformVersion=${env.PLATFORM_VERSION}"
+                        testCommand += " --platformVersion='${env.PLATFORM_VERSION}'"
                     }
 
                     echo "Running: ${testCommand}"
