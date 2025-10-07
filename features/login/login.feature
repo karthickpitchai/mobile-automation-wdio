@@ -8,7 +8,7 @@ Feature: Login Functionality
     Given I am on the home page
 
   @login @negative
-  Scenario: Login with invalid credentials
+  Scenario: lick the buttons on home page for WDIO demo app
     When I click the buttons on home page
   #   Then I should see an error message
 
