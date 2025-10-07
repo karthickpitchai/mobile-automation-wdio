@@ -80,6 +80,25 @@ properties([
                     '''
                 ]
             ]
+        ],
+        [$class: 'ChoiceParameter',
+            choiceType: 'PT_SINGLE_SELECT',
+            filterLength: 1,
+            filterable: false,
+            name: 'TEST_TYPE',
+            script: [
+                $class: 'GroovyScript',
+                fallbackScript: [
+                    classpath: [],
+                    sandbox: true,
+                    script: 'return ["@Smoke", "@Sanity", "@Regression"]'
+                ],
+                script: [
+                    classpath: [],
+                    sandbox: true,
+                    script: 'return ["@Smoke", "@Sanity", "@Regression"]'
+                ]
+            ]
         ]
     ])
 ])
@@ -205,7 +224,7 @@ pipeline {
         stage('Run Tests') {
             steps {
                 script {
-                    def testCommand = "npm run test:${params.PLATFORM} -- --hostname=${env.APPIUM_HOST} --port=${env.APPIUM_PORT} --deviceName=${env.DEVICE_NAME}"
+                    def testCommand = "npm run test:${params.PLATFORM} -- --hostname=${env.APPIUM_HOST} --port=${env.APPIUM_PORT} --deviceName=${env.DEVICE_NAME} --testType=${params.TEST_TYPE}"
 
                     if (env.UDID && env.UDID != "") {
                         testCommand += " --udid=${env.UDID}"

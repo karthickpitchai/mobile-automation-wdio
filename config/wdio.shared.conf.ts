@@ -1,5 +1,13 @@
 import type { Options } from '@wdio/types';
 
+// Parse CLI arguments
+const getCliArg = (argName: string, defaultValue: string | number): string | number => {
+    const arg = process.argv.find(arg => arg.startsWith(`--${argName}=`));
+    return arg ? arg.split('=')[1] : defaultValue;
+};
+
+const testType = getCliArg('testType', '@Smoke') as string;
+
 export const config: Options.Testrunner = {
     runner: 'local',
 
@@ -37,7 +45,7 @@ export const config: Options.Testrunner = {
         snippets: true,
         source: true,
         strict: false,
-        tags: '',
+        tags: testType,
         timeout: 60000,
         ignoreUndefinedDefinitions: false
     },
