@@ -26,7 +26,7 @@ export const config: WebdriverIO.Config = {
         'appium:deviceName': deviceName,
         ...(udid && { 'appium:udid': udid }),
         'appium:platformVersion': platformVersion,
-        'appium:app': join(process.cwd(), 'apps', 'ios', 'app.app'),
+        'appium:app': join(process.cwd(), 'apps', 'ios', 'wdiodemoapp.app'),
         'appium:newCommandTimeout': 240,
         'appium:autoAcceptAlerts': true,
         'appium:noReset': false,
