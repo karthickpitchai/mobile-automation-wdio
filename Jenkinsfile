@@ -136,19 +136,13 @@ pipeline {
         stage('Reserve Device') {
             steps {
                 script {
-                    // First, get the response and check its format
-                    def response = sh(
-                        script: "curl -s ${DEVICE_FARM_URL}/api/devices",
-                        returnStdout: true
-                    ).trim()
-
-                    // Log the response for debugging
-                    // echo "API Response: ${response}"
+                    // Save devices API response to file
+                    sh "curl -s ${DEVICE_FARM_URL}/api/devices > /tmp/devices_response.json"
 
                     // Parse the response and filter by device name
                     def deviceId = sh(
                         script: """
-                            echo '${response}' | jq -r 'if type == "array" then (.[] | select(.name == "${params.DEVICE_NAME}") | .id) else if type == "object" then (.data[] | select(.name == "${params.DEVICE_NAME}") | .id) else empty end end'
+                            jq -r 'if type == "array" then (.[] | select(.name == "${params.DEVICE_NAME}") | .id) else if type == "object" then (.data[] | select(.name == "${params.DEVICE_NAME}") | .id) else empty end end' /tmp/devices_response.json
                         """,
                         returnStdout: true
                     ).trim()
@@ -156,53 +150,42 @@ pipeline {
                     if (deviceId == null || deviceId.isEmpty()) {
                         error "Device '${params.DEVICE_NAME}' not found or not available"
                     }
-                    
+
                     echo "Selected Device ID: ${deviceId}"
                     
-                    def startResponse = sh(
-                        script: """
-                            curl -s -X POST ${DEVICE_FARM_URL}/api/devices/${deviceId}/appium/auto-start \
-                            -H "Content-Type: application/json" \
-                            -d '{"userId": "jenkins", "duration": 90, "purpose": "Pipeline Testing"}'
-                        """,
-                        returnStdout: true
-                    ).trim()
+                    // Save auto-start response to file for parsing
+                    sh """
+                        curl -s -X POST ${DEVICE_FARM_URL}/api/devices/${deviceId}/appium/auto-start \
+                        -H "Content-Type: application/json" \
+                        -d '{"userId": "jenkins", "duration": 90, "purpose": "Pipeline Testing"}' \
+                        > /tmp/start_response.json
+                    """
 
-                    echo "Start Response: ${startResponse}"
+                    echo "Device started successfully"
 
                     // Parse configuration from auto-start API response
                     def appiumHost = sh(
-                        script: """
-                            echo '${startResponse}' | jq -r '.instructions.webdriverio.config.hostname // "localhost"'
-                        """,
+                        script: "jq -r '.instructions.webdriverio.config.hostname // \"localhost\"' /tmp/start_response.json",
                         returnStdout: true
                     ).trim()
 
                     def appiumPort = sh(
-                        script: """
-                            echo '${startResponse}' | jq -r '.port // 4723'
-                        """,
+                        script: "jq -r '.port // 4723' /tmp/start_response.json",
                         returnStdout: true
                     ).trim()
 
                     def deviceName = sh(
-                        script: """
-                            echo '${startResponse}' | jq -r '.capabilities.deviceName // "${params.DEVICE_NAME}"'
-                        """,
+                        script: "jq -r '.capabilities.deviceName // \"${params.DEVICE_NAME}\"' /tmp/start_response.json",
                         returnStdout: true
                     ).trim()
 
                     def udid = sh(
-                        script: """
-                            echo '${startResponse}' | jq -r '.capabilities.udid // "${params.DEVICE_NAME}"'
-                        """,
+                        script: "jq -r '.capabilities.udid // \"${params.DEVICE_NAME}\"' /tmp/start_response.json",
                         returnStdout: true
                     ).trim()
 
                     def platformVersion = sh(
-                        script: """
-                            echo '${startResponse}' | jq -r '.capabilities.platformVersion // "14.0"'
-                        """,
+                        script: "jq -r '.capabilities.platformVersion // \"14.0\"' /tmp/start_response.json",
                         returnStdout: true
                     ).trim()
 
@@ -245,6 +228,9 @@ pipeline {
                 if (env.DEVICE_ID) {
                     sh "curl -X POST ${DEVICE_FARM_URL}/api/devices/${env.DEVICE_ID}/appium/stop"
                 }
+
+                // Cleanup temporary files
+                sh "rm -f /tmp/devices_response.json /tmp/start_response.json"
             }
         }
     }
