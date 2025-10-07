@@ -155,13 +155,17 @@ pipeline {
         stage('Reserve Device') {
             steps {
                 script {
+                    // Create unique filenames for this build
+                    def devicesFile = "/tmp/devices_response_${BUILD_NUMBER}.json"
+                    def startFile = "/tmp/start_response_${BUILD_NUMBER}.json"
+
                     // Save devices API response to file
-                    sh "curl -s ${DEVICE_FARM_URL}/api/devices > /tmp/devices_response.json"
+                    sh "curl -s ${DEVICE_FARM_URL}/api/devices > ${devicesFile}"
 
                     // Parse the response and filter by device name
                     def deviceId = sh(
                         script: """
-                            jq -r 'if type == "array" then (.[] | select(.name == "${params.DEVICE_NAME}") | .id) else if type == "object" then (.data[] | select(.name == "${params.DEVICE_NAME}") | .id) else empty end end' /tmp/devices_response.json
+                            jq -r 'if type == "array" then (.[] | select(.name == "${params.DEVICE_NAME}") | .id) else if type == "object" then (.data[] | select(.name == "${params.DEVICE_NAME}") | .id) else empty end end' ${devicesFile}
                         """,
                         returnStdout: true
                     ).trim()
@@ -171,40 +175,40 @@ pipeline {
                     }
 
                     echo "Selected Device ID: ${deviceId}"
-                    
+
                     // Save auto-start response to file for parsing
                     sh """
                         curl -s -X POST ${DEVICE_FARM_URL}/api/devices/${deviceId}/appium/auto-start \
                         -H "Content-Type: application/json" \
                         -d '{"userId": "jenkins", "duration": 90, "purpose": "Pipeline Testing"}' \
-                        > /tmp/start_response.json
+                        > ${startFile}
                     """
 
                     echo "Device started successfully"
 
                     // Parse configuration from auto-start API response
                     def appiumHost = sh(
-                        script: "jq -r '.instructions.webdriverio.config.hostname // \"localhost\"' /tmp/start_response.json",
+                        script: "jq -r '.instructions.webdriverio.config.hostname // \"localhost\"' ${startFile}",
                         returnStdout: true
                     ).trim()
 
                     def appiumPort = sh(
-                        script: "jq -r '.port // 4723' /tmp/start_response.json",
+                        script: "jq -r '.port // 4723' ${startFile}",
                         returnStdout: true
                     ).trim()
 
                     def deviceName = sh(
-                        script: "jq -r '.capabilities.deviceName // \"${params.DEVICE_NAME}\"' /tmp/start_response.json",
+                        script: "jq -r '.capabilities.deviceName // \"${params.DEVICE_NAME}\"' ${startFile}",
                         returnStdout: true
                     ).trim()
 
                     def udid = sh(
-                        script: "jq -r '.capabilities.udid // \"${params.DEVICE_NAME}\"' /tmp/start_response.json",
+                        script: "jq -r '.capabilities.udid // \"${params.DEVICE_NAME}\"' ${startFile}",
                         returnStdout: true
                     ).trim()
 
                     def platformVersion = sh(
-                        script: "jq -r '.capabilities.platformVersion // \"14.0\"' /tmp/start_response.json",
+                        script: "jq -r '.capabilities.platformVersion // \"14.0\"' ${startFile}",
                         returnStdout: true
                     ).trim()
 
@@ -255,8 +259,8 @@ pipeline {
                     sh "curl -X POST ${DEVICE_FARM_URL}/api/devices/${env.DEVICE_ID}/appium/stop"
                 }
 
-                // Cleanup temporary files
-                sh "rm -f /tmp/devices_response.json /tmp/start_response.json"
+                // Cleanup temporary files for this build
+                sh "rm -f /tmp/devices_response_${BUILD_NUMBER}.json /tmp/start_response_${BUILD_NUMBER}.json"
             }
         }
     }
