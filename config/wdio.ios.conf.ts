@@ -16,6 +16,10 @@ const platformVersion = getCliArg('platformVersion', '17.0') as string;
 export const config: WebdriverIO.Config = {
     ...sharedConfig,
 
+     specs: [
+        join(process.cwd(), 'features', '**', '*.feature')
+    ],
+    
     hostname: hostname,
     port: port,
     path: '/',
