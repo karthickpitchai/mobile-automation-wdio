@@ -7,11 +7,11 @@ Feature: Login Functionality
   Background:
     Given I am on the home page
 
-  @login @negative @Sanity
+  @login @Smoke @Sanity
   Scenario: lick the buttons on home page for WDIO demo app
     When I click the buttons on home page
 
-    @login @negative @Regression @Sanity
+    @login @Regression @Sanity
   Scenario: lick the buttons on home page for WDIO demo app
     When I click the buttons on home page
   #   Then I should see an error message
