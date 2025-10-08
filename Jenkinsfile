@@ -267,8 +267,6 @@ pipeline {
                     try {
                         sh """
                             cd ${WORKSPACE}
-                            echo "Current directory: \$(pwd)"
-                            echo "Node modules exists: \$(test -d node_modules && echo 'yes' || echo 'no')"
                             npm run test:${params.PLATFORM} -- ${argsString}
                         """
                     } catch (Exception e) {
