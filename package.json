@@ -5,12 +5,12 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test:Android": "wdio run ./config/wdio.android.conf.ts",
-    "test:iOS": "wdio run ./config/wdio.ios.conf.ts",
-    "test:android:smoke": "wdio run ./config/wdio.android.conf.ts --cucumberOpts.tags='@smoke'",
-    "test:ios:smoke": "wdio run ./config/wdio.ios.conf.ts --cucumberOpts.tags='@smoke'",
-    "test:android:login": "wdio run ./config/wdio.android.conf.ts --cucumberOpts.tags='@login'",
-    "test:ios:login": "wdio run ./config/wdio.ios.conf.ts --cucumberOpts.tags='@login'"
+    "test:Android": "npx wdio run ./config/wdio.android.conf.ts",
+    "test:iOS": "npx wdio run ./config/wdio.ios.conf.ts",
+    "test:android:smoke": "npx wdio run ./config/wdio.android.conf.ts --cucumberOpts.tags='@smoke'",
+    "test:ios:smoke": "npx wdio run ./config/wdio.ios.conf.ts --cucumberOpts.tags='@smoke'",
+    "test:android:login": "npx wdio run ./config/wdio.android.conf.ts --cucumberOpts.tags='@login'",
+    "test:ios:login": "npx wdio run ./config/wdio.ios.conf.ts --cucumberOpts.tags='@login'"
   },
   "overrides": {
     "axios": "1.12.2",

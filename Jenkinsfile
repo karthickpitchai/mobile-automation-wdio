@@ -114,6 +114,8 @@ pipeline {
         DEVICE_FARM_URL = 'http://localhost:5001'
         NODE_OPTIONS = '--experimental-vm-modules'  // Enable ES modules
         NODE_ENV = 'development'
+        NPM_CONFIG_PREFIX = "${WORKSPACE}/.npm-global"
+        PATH = "${WORKSPACE}/node_modules/.bin:${NPM_CONFIG_PREFIX}/bin:${env.PATH}"
     }
 
     stages {
@@ -140,6 +142,21 @@ pipeline {
         //         }
         //     }
         // }
+
+        stage('Verify Environment') {
+            steps {
+                script {
+                    echo "Verifying Node.js and npm setup..."
+                    sh '''
+                        node -v
+                        npm -v
+                        echo "Workspace: ${WORKSPACE}"
+                        echo "PATH: ${PATH}"
+                        which npx || echo "npx not found in PATH"
+                    '''
+                }
+            }
+        }
 
         stage('Validate Device Selection') {
             steps {
@@ -245,9 +262,15 @@ pipeline {
 
                     def argsString = args.join(' ')
                     echo "Test arguments: ${argsString}"
+                    echo "Build workspace: ${WORKSPACE}"
 
                     try {
-                        sh "npm run test:${params.PLATFORM} -- ${argsString}"
+                        sh """
+                            cd ${WORKSPACE}
+                            echo "Current directory: \$(pwd)"
+                            echo "Node modules exists: \$(test -d node_modules && echo 'yes' || echo 'no')"
+                            npm run test:${params.PLATFORM} -- ${argsString}
+                        """
                     } catch (Exception e) {
                         echo "Test execution failed: ${e.message}"
                         currentBuild.result = 'FAILURE'
