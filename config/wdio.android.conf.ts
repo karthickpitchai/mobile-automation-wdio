@@ -29,6 +29,7 @@ export const config: WebdriverIO.Config = {
     connectionRetryCount: 3,
 
     capabilities: [{
+        "wdio:maxInstances": 100,
         platformName: 'Android',
         'appium:automationName': 'UiAutomator2',
         'appium:deviceName': deviceName,
