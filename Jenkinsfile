@@ -114,8 +114,6 @@ pipeline {
         DEVICE_FARM_URL = 'http://localhost:5001'
         NODE_OPTIONS = '--experimental-vm-modules'  // Enable ES modules
         NODE_ENV = 'development'
-        NPM_CONFIG_PREFIX = "${WORKSPACE}/.npm-global"
-        PATH = "${WORKSPACE}/node_modules/.bin:${NPM_CONFIG_PREFIX}/bin:${env.PATH}"
     }
 
     stages {
@@ -147,13 +145,13 @@ pipeline {
             steps {
                 script {
                     echo "Verifying Node.js and npm setup..."
-                    sh '''
+                    sh """
                         node -v
                         npm -v
-                        echo "Workspace: ${WORKSPACE}"
-                        echo "PATH: ${PATH}"
+                        echo "Workspace: \${WORKSPACE}"
                         which npx || echo "npx not found in PATH"
-                    '''
+                        cd "\${WORKSPACE}" && test -f package.json && echo "package.json found" || echo "package.json NOT found"
+                    """
                 }
             }
         }
@@ -266,7 +264,7 @@ pipeline {
 
                     try {
                         sh """
-                            cd ${WORKSPACE}
+                            cd "${WORKSPACE}"
                             npm run test:${params.PLATFORM} -- ${argsString}
                         """
                     } catch (Exception e) {
