@@ -141,17 +141,27 @@ pipeline {
         //     }
         // }
 
-        stage('Verify Environment') {
+        stage('Install Dependencies') {
             steps {
                 script {
-                    echo "Verifying Node.js and npm setup..."
-                    sh """
-                        node -v
-                        npm -v
-                        echo "Workspace: \${WORKSPACE}"
-                        which npx || echo "npx not found in PATH"
-                        cd "\${WORKSPACE}" && test -f package.json && echo "package.json found" || echo "package.json NOT found"
-                    """
+                    echo "Checking and installing dependencies..."
+                    dir("${WORKSPACE}") {
+                        sh """
+                            node -v
+                            npm -v
+
+                            # Check if node_modules exists and has wdio
+                            if [ ! -f node_modules/.bin/wdio ]; then
+                                echo "wdio not found, installing dependencies..."
+                                npm install
+                            else
+                                echo "Dependencies already installed, skipping..."
+                            fi
+
+                            # Verify wdio is available
+                            test -f node_modules/.bin/wdio && echo "✓ wdio binary found" || (echo "✗ wdio binary NOT found" && exit 1)
+                        """
+                    }
                 }
             }
         }
@@ -261,12 +271,17 @@ pipeline {
                     def argsString = args.join(' ')
                     echo "Test arguments: ${argsString}"
                     echo "Build workspace: ${WORKSPACE}"
+                    echo "Build number: ${BUILD_NUMBER}"
 
                     try {
-                        sh """
-                            cd "${WORKSPACE}"
-                            npm run test:${params.PLATFORM} -- ${argsString}
-                        """
+                        // Use dir step to ensure proper working directory
+                        dir("${WORKSPACE}") {
+                            sh """
+                                echo "Running tests from directory: \$(pwd)"
+                                node --version
+                                npm run test:${params.PLATFORM} -- ${argsString}
+                            """
+                        }
                     } catch (Exception e) {
                         echo "Test execution failed: ${e.message}"
                         currentBuild.result = 'FAILURE'
