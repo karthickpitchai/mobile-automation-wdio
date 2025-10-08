@@ -20,7 +20,7 @@ export const config: WebdriverIO.Config = {
         join(process.cwd(), 'features', '**', '*.feature')
     ],
 
-    hostname: hostname,
+    hostname: 'localhost',
     port: port,
     path: '/',
 
